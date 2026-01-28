@@ -13,6 +13,7 @@ domain/
 ├── repositories/         # Interfaces + infrastructure implementations
 │   ├── UserRepository.ts # Interface (contract)
 │   └── infrastructure/   # Implementations (drizzle/, in-memory/, etc.)
+├── utils/                # Pure helpers, no side effects
 └── subdomains/           # Optional nested domains
 ```
 
@@ -62,6 +63,15 @@ Repositories abstract data access. They're defined in two parts:
 The infrastructure folder is a router subsystem with one child subsystem per implementation. This colocation keeps interfaces near their implementations while the codebase is young. May move to `lib/infrastructure` later when sharing across domains becomes necessary.
 
 Repositories handle all database complexity (joins, many-to-many tables, etc.) so the domain works with clean objects and aggregates.
+
+## Utils
+
+Utils provide **pure helper functions** with no side effects. This folder has a special status:
+
+- **No dependency declaration required** - any part of the domain can import from utils without declaring it in `dependencies.json`
+- **Must be side-effect free** - importing from utils is "free of charge" (unlike services, which may trigger database access)
+
+This makes utils ideal for pure transformations, formatters, validators, and domain-specific calculations that don't require I/O.
 
 ## Subdomains
 
