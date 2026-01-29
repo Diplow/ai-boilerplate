@@ -1,1 +1,1 @@
-export { authClient } from "./better-auth/client";
+// Server subsystem re-exports are added here as needed

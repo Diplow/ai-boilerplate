@@ -1,0 +1,1 @@
+export { DrizzleContactRepository } from "./drizzle";

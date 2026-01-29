@@ -1,0 +1,91 @@
+"use client";
+
+import { useState } from "react";
+import type { FormEvent } from "react";
+
+import { ContactFormFields } from "~/app/contacts/_components/ContactFormFields";
+
+const EMPTY_FORM = {
+  firstName: "", lastName: "", email: "",
+  company: "", jobTitle: "", phone: "", notes: "",
+};
+
+interface CreateContactFormProps {
+  onContactCreated: () => void;
+}
+
+export function CreateContactForm({ onContactCreated }: CreateContactFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [formData, setFormData] = useState(EMPTY_FORM);
+
+  function handleFieldChange(field: keyof typeof EMPTY_FORM, value: string) {
+    setFormData((previous) => ({ ...previous, [field]: value }));
+  }
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email || undefined,
+          company: formData.company || undefined,
+          jobTitle: formData.jobTitle || undefined,
+          phone: formData.phone || undefined,
+          notes: formData.notes || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create contact");
+      }
+
+      setFormData(EMPTY_FORM);
+      setErrorMessage(null);
+      setIsOpen(false);
+      onContactCreated();
+    } catch {
+      setErrorMessage("Failed to create contact. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+      >
+        New Contact
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full max-w-md rounded-xl bg-white/10 p-6">
+      <h2 className="mb-4 text-xl font-bold">New Contact</h2>
+      {errorMessage && <p className="mb-4 text-sm text-red-400">{errorMessage}</p>}
+      <ContactFormFields formData={formData} onChange={handleFieldChange} />
+      <div className="mt-4 flex gap-3">
+        <button type="submit" disabled={isSubmitting}
+          className="rounded-full bg-white/20 px-6 py-2 font-semibold transition hover:bg-white/30 disabled:opacity-50">
+          {isSubmitting ? "Creating..." : "Create"}
+        </button>
+        <button type="button"
+          onClick={() => { setFormData(EMPTY_FORM); setErrorMessage(null); setIsOpen(false); }}
+          className="rounded-full bg-white/10 px-6 py-2 font-semibold transition hover:bg-white/20">
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}

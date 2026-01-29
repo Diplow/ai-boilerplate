@@ -1,5 +1,9 @@
 Always use descriptive variable names
 
+Always use `model: "opus"` when spawning Task subagents.
+
+Never run `pnpm dev` — the user runs it. Ask the user to check dev server output when needed.
+
 ## Rule of 6
 
 The codebase follows the **Rule of 6** for consistent organization (enforced by `pnpm check:ruleof6`):
@@ -60,3 +64,9 @@ Frontend  →  API  →  Domain  →  Database Schema
 - **Database Schema** (`src/server/db`): Drizzle schema. Only imported by repositories.
 
 Use `/plan-feature <description>` to plan features using this architecture.
+
+## Product Context
+
+Sales prospection platform that helps sales teams automate their prospection workflow. Core concepts:
+- **Prospects**: Potential customers being tracked
+- **Contacts**: Individual people within prospect organizations

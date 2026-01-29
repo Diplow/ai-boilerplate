@@ -103,3 +103,27 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, { fields: [session.userId], references: [user.id] }),
 }));
+
+export const contact = createTable(
+  "contact",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    firstName: d.varchar({ length: 100 }).notNull(),
+    lastName: d.varchar({ length: 100 }).notNull(),
+    email: d.varchar({ length: 255 }),
+    company: d.varchar({ length: 200 }),
+    jobTitle: d.varchar({ length: 150 }),
+    phone: d.varchar({ length: 50 }),
+    notes: d.text(),
+    ownerId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => user.id),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index("contact_owner_idx").on(t.ownerId)],
+);

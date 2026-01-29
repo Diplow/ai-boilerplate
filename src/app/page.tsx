@@ -46,20 +46,28 @@ export default async function Home() {
             {!session ? (
               <SignInButton />
             ) : (
-              <form>
-                <button
+              <div className="flex flex-col items-center gap-4">
+                <Link
+                  href="/contacts"
                   className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                  formAction={async () => {
-                    "use server";
-                    await auth.api.signOut({
-                      headers: await headers(),
-                    });
-                    redirect("/");
-                  }}
                 >
-                  Sign out
-                </button>
-              </form>
+                  View Contacts
+                </Link>
+                <form>
+                  <button
+                    className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+                    formAction={async () => {
+                      "use server";
+                      await auth.api.signOut({
+                        headers: await headers(),
+                      });
+                      redirect("/");
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </div>
             )}
           </div>
         </div>
