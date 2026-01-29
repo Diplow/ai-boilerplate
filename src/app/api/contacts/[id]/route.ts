@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { ContactService, IamService } from "~/lib/domains";
+import { ContactService } from "~/lib/domains/prospect";
+import { IamService } from "~/lib/domains/iam";
 import { headers } from "next/headers";
 
 const updateContactSchema = z.object({

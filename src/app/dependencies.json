@@ -1,6 +1,6 @@
 {
   "type": "app",
-  "allowed": ["~/lib/domains", "~/lib/auth-client"],
+  "allowed": ["~/lib/domains/iam", "~/lib/auth-client"],
   "allowedChildren": ["react", "next"],
   "subsystems": ["./api", "./contacts"]
 }

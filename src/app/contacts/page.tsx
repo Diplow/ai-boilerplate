@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { IamService } from "~/lib/domains";
+import { IamService } from "~/lib/domains/iam";
 import { ContactsPageContent } from "~/app/contacts/_components/ContactsPageContent";
 
 export default async function ContactsPage() {

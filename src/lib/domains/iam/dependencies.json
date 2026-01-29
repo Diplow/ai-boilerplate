@@ -1,5 +1,5 @@
 {
-  "type": "router",
-  "allowed": [],
+  "type": "domain",
+  "allowed": ["~/lib/logging"],
   "subsystems": ["./objects", "./repositories", "./services"]
 }

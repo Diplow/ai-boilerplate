@@ -1,5 +1,5 @@
 {
   "type": "router",
   "allowed": [],
-  "subsystems": ["./domains", "./auth-client"]
+  "subsystems": ["./domains", "./auth-client", "./logging"]
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { SignInButton } from "~/app/_components/sign-in-button";
 import { SignOutButton } from "~/app/_components/sign-out-button";
-import { IamService } from "~/lib/domains";
+import { IamService } from "~/lib/domains/iam";
 
 export default async function Home() {
   const currentUser = await IamService.getCurrentUser(await headers());
