@@ -11,7 +11,7 @@ export class BetterAuthUserRepository implements UserRepository {
       id: session.user.id,
       name: session.user.name,
       email: session.user.email,
-      image: session.user.image,
+      image: session.user.image ?? null,
     };
   }
 }

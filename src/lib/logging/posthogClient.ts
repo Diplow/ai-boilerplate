@@ -15,8 +15,8 @@ export function _getPostHogClient(): PostHog | null {
 
   cachedClient = new PostHog(apiKey);
 
-  process.on("beforeExit", async () => {
-    await cachedClient?.shutdown();
+  process.on("beforeExit", () => {
+    void cachedClient?.shutdown();
   });
 
   return cachedClient;
