@@ -1,3 +1,3 @@
-[submodule "/home/ulysse/Documents/ai-boilerplate/scripts/checks/architecture"]
-	path = /home/ulysse/Documents/ai-boilerplate/scripts/checks/architecture
+[submodule "scripts/checks/architecture"]
+	path = scripts/checks/architecture
 	url = git@github.com:Diplow/subsystem-architecture.git
