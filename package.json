@@ -30,7 +30,7 @@
     "@t3-oss/env-nextjs": "^0.12.0",
     "better-auth": "^1.3",
     "drizzle-orm": "^0.41.0",
-    "next": "^15.2.3",
+    "next": "^15.5.11",
     "postgres": "^3.4.4",
     "posthog-node": "^5.24.7",
     "react": "^19.0.0",
