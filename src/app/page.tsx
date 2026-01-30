@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 
 import { SignInButton } from "~/app/_components/sign-in-button";
@@ -6,7 +5,7 @@ import { SignOutButton } from "~/app/_components/sign-out-button";
 import { IamService } from "~/lib/domains/iam";
 
 export default async function Home() {
-  const currentUser = await IamService.getCurrentUser(await headers());
+  const currentUser = await IamService.getCurrentUser();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">

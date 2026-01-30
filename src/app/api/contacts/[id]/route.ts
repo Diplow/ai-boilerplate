@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ContactService } from "~/lib/domains/prospect";
 import { IamService } from "~/lib/domains/iam";
 import { withApiLogging } from "~/lib/logging";
-import { headers } from "next/headers";
+import { resolveSessionUserId } from "~/server/better-auth";
 
 const updateContactSchema = z.object({
   firstName: z.string().min(1).optional(),
@@ -20,7 +20,7 @@ const handlers = withApiLogging("/api/contacts/[id]", {
     _request: Request,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -43,7 +43,7 @@ const handlers = withApiLogging("/api/contacts/[id]", {
     request: Request,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -72,7 +72,7 @@ const handlers = withApiLogging("/api/contacts/[id]", {
     _request: Request,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -90,6 +90,6 @@ const handlers = withApiLogging("/api/contacts/[id]", {
 
     return new Response(null, { status: 204 });
   },
-});
+}, resolveSessionUserId);
 
 export const { GET, PUT, DELETE } = handlers;

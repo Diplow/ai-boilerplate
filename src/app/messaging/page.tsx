@@ -1,11 +1,10 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { IamService } from "~/lib/domains/iam";
 import { MessagingPageContent } from "~/app/messaging/_components/MessagingPageContent";
 
 export default async function MessagingPage() {
-  const currentUser = await IamService.getCurrentUser(await headers());
+  const currentUser = await IamService.getCurrentUser();
 
   if (!currentUser) {
     redirect("/");

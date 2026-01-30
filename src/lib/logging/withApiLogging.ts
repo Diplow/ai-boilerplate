@@ -8,6 +8,7 @@ interface ApiAnalyticsEvent {
   statusCode: number;
   durationMs: number;
   status: "success" | "error";
+  userId: string | null;
 }
 
 function _captureApiAnalyticsEvent(event: ApiAnalyticsEvent): void {
@@ -15,7 +16,7 @@ function _captureApiAnalyticsEvent(event: ApiAnalyticsEvent): void {
   if (!posthogClient) return;
 
   posthogClient.capture({
-    distinctId: "server",
+    distinctId: event.userId ?? "server",
     event: "api_call",
     properties: event,
   });
@@ -24,6 +25,7 @@ function _captureApiAnalyticsEvent(event: ApiAnalyticsEvent): void {
 export function withApiLogging<T extends Record<string, RouteHandler>>(
   routePattern: string,
   handlers: T,
+  resolveUserId?: () => Promise<string | null>,
 ): T {
   const wrappedHandlers = {} as Record<string, unknown>;
 
@@ -35,24 +37,38 @@ export function withApiLogging<T extends Record<string, RouteHandler>>(
       try {
         const response = await originalHandler(...(args as never[]));
         const durationMs = Math.round(performance.now() - startTime);
+        let userId: string | null = null;
+        try {
+          userId = (await resolveUserId?.()) ?? null;
+        } catch (resolverError) {
+          console.warn("Failed to resolve userId for API logging", resolverError);
+        }
         const event: ApiAnalyticsEvent = {
           route: routePattern,
           method: methodName,
           statusCode: response.status,
           durationMs,
           status: "success",
+          userId,
         };
         console.log(JSON.stringify(event));
         _captureApiAnalyticsEvent(event);
         return response;
       } catch (error) {
         const durationMs = Math.round(performance.now() - startTime);
+        let userId: string | null = null;
+        try {
+          userId = (await resolveUserId?.()) ?? null;
+        } catch (resolverError) {
+          console.warn("Failed to resolve userId for API logging", resolverError);
+        }
         const event: ApiAnalyticsEvent = {
           route: routePattern,
           method: methodName,
           statusCode: 500,
           durationMs,
           status: "error",
+          userId,
         };
         console.log(JSON.stringify(event));
         _captureApiAnalyticsEvent(event);

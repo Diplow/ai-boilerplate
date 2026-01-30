@@ -1,2 +1,2 @@
 export { auth } from "./config";
-export { getSession } from "./server";
+export { getSession, resolveSessionUserId } from "./server";

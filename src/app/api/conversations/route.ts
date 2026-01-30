@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { headers } from "next/headers";
 
 import { IamService } from "~/lib/domains/iam";
 import { ContactService } from "~/lib/domains/prospect";
 import { ConversationService, DraftService } from "~/lib/domains/messaging";
 import type { ContactInfo } from "~/lib/domains/messaging";
 import { withApiLogging } from "~/lib/logging";
+import { resolveSessionUserId } from "~/server/better-auth";
 
 const createConversationSchema = z.object({
   contactId: z.number().int().positive(),
@@ -14,7 +14,7 @@ const createConversationSchema = z.object({
 
 const handlers = withApiLogging("/api/conversations", {
   GET: async () => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,7 +24,7 @@ const handlers = withApiLogging("/api/conversations", {
   },
 
   POST: async (request: Request) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -65,6 +65,6 @@ const handlers = withApiLogging("/api/conversations", {
       { status: 201 },
     );
   },
-});
+}, resolveSessionUserId);
 
 export const { GET, POST } = handlers;

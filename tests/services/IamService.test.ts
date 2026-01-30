@@ -8,9 +8,14 @@ const testInstancePromise = getTestInstance(
   { disableTestUser: true },
 );
 
+let mockSessionHeaders: Headers = new Headers();
+
 vi.mock("~/server/better-auth", async () => {
   const { auth } = await testInstancePromise;
-  return { auth };
+  return {
+    auth,
+    getSession: async () => auth.api.getSession({ headers: mockSessionHeaders }),
+  };
 });
 
 // --- Import the service AFTER the mock is set up ---
@@ -38,25 +43,28 @@ async function signInAndGetHeaders(email: string, password: string) {
 
 describe("IamService.getCurrentUser", () => {
   it("returns null when no auth headers", async () => {
-    const result = await IamService.getCurrentUser(new Headers());
+    mockSessionHeaders = new Headers();
+
+    const result = await IamService.getCurrentUser();
 
     expect(result).toBeNull();
   });
 
   it("returns null for invalid session token", async () => {
-    const headers = new Headers();
-    headers.set("cookie", "better-auth.session_token=invalid-garbage-token");
+    const invalidHeaders = new Headers();
+    invalidHeaders.set("cookie", "better-auth.session_token=invalid-garbage-token");
+    mockSessionHeaders = invalidHeaders;
 
-    const result = await IamService.getCurrentUser(headers);
+    const result = await IamService.getCurrentUser();
 
     expect(result).toBeNull();
   });
 
   it("returns user for valid session", async () => {
     await signUpUser("alice@test.com", "Alice", "password123");
-    const headers = await signInAndGetHeaders("alice@test.com", "password123");
+    mockSessionHeaders = await signInAndGetHeaders("alice@test.com", "password123");
 
-    const result = await IamService.getCurrentUser(headers);
+    const result = await IamService.getCurrentUser();
 
     expect(result).not.toBeNull();
     expect(result!.email).toBe("alice@test.com");
@@ -65,9 +73,9 @@ describe("IamService.getCurrentUser", () => {
 
   it("maps all user fields correctly", async () => {
     await signUpUser("bob@test.com", "Bob Smith", "password123");
-    const headers = await signInAndGetHeaders("bob@test.com", "password123");
+    mockSessionHeaders = await signInAndGetHeaders("bob@test.com", "password123");
 
-    const result = await IamService.getCurrentUser(headers);
+    const result = await IamService.getCurrentUser();
 
     expect(result).toMatchObject({
       email: "bob@test.com",
@@ -80,17 +88,18 @@ describe("IamService.getCurrentUser", () => {
 
   it("returns null after session is revoked", async () => {
     await signUpUser("carol@test.com", "Carol", "password123");
-    const headers = await signInAndGetHeaders("carol@test.com", "password123");
+    const sessionHeaders = await signInAndGetHeaders("carol@test.com", "password123");
+    mockSessionHeaders = sessionHeaders;
 
     // Verify session works before revoking
-    const beforeRevoke = await IamService.getCurrentUser(headers);
+    const beforeRevoke = await IamService.getCurrentUser();
     expect(beforeRevoke).not.toBeNull();
 
     // Revoke all sessions for this user
     const { auth } = await testInstancePromise;
-    await auth.api.revokeSessions({ headers });
+    await auth.api.revokeSessions({ headers: sessionHeaders });
 
-    const afterRevoke = await IamService.getCurrentUser(headers);
+    const afterRevoke = await IamService.getCurrentUser();
 
     expect(afterRevoke).toBeNull();
   });
@@ -102,8 +111,11 @@ describe("IamService.getCurrentUser", () => {
     const danHeaders = await signInAndGetHeaders("dan@test.com", "password123");
     const eveHeaders = await signInAndGetHeaders("eve@test.com", "password123");
 
-    const danResult = await IamService.getCurrentUser(danHeaders);
-    const eveResult = await IamService.getCurrentUser(eveHeaders);
+    mockSessionHeaders = danHeaders;
+    const danResult = await IamService.getCurrentUser();
+
+    mockSessionHeaders = eveHeaders;
+    const eveResult = await IamService.getCurrentUser();
 
     expect(danResult!.email).toBe("dan@test.com");
     expect(danResult!.name).toBe("Dan");

@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { headers } from "next/headers";
 
 import { IamService } from "~/lib/domains/iam";
 import { ContactService } from "~/lib/domains/prospect";
 import { ConversationService, DraftService } from "~/lib/domains/messaging";
 import type { ContactInfo, ConversationMessage } from "~/lib/domains/messaging";
 import { withApiLogging } from "~/lib/logging";
+import { resolveSessionUserId } from "~/server/better-auth";
 
 const createMessageSchema = z.object({
   role: z.enum(["prospect", "contact"]),
@@ -17,7 +17,7 @@ const handlers = withApiLogging("/api/conversations/[id]/messages", {
     _request: Request,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -41,7 +41,7 @@ const handlers = withApiLogging("/api/conversations/[id]/messages", {
     request: Request,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -103,6 +103,6 @@ const handlers = withApiLogging("/api/conversations/[id]/messages", {
 
     return Response.json(draftResult, { status: 201 });
   },
-});
+}, resolveSessionUserId);
 
 export const { GET, POST } = handlers;
