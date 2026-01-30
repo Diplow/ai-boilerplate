@@ -5,3 +5,6 @@ import { cache } from "react";
 export const getSession = cache(async () =>
   auth.api.getSession({ headers: await headers() }),
 );
+
+export const resolveSessionUserId = async () =>
+  (await getSession())?.user.id ?? null;

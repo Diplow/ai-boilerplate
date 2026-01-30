@@ -9,7 +9,7 @@ IAM answers one question: "Who is making this request?" It defines the `User` ty
 ## Responsibilities
 
 - Define the canonical `User` and `Session` types
-- Provide `getCurrentUser(headers)` to resolve the authenticated user
+- Provide `getCurrentUser()` to resolve the authenticated user
 - Abstract away the authentication provider (better-auth) behind a repository
 
 ## Child Subsystems
@@ -20,4 +20,4 @@ IAM answers one question: "Who is making this request?" It defines the `User` ty
 
 ## Known Impurities
 
-- `UserRepository.getCurrentUser(headers: Headers)` — HTTP `Headers` leak into the domain layer. This is a pragmatic trade-off: authentication inherently depends on the request context. Documented here rather than hidden.
+None. The `UserRepository` uses the React `cache`-wrapped `getSession()` internally, keeping HTTP details out of the domain interface.

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ContactService } from "~/lib/domains/prospect";
 import { IamService } from "~/lib/domains/iam";
 import { withApiLogging } from "~/lib/logging";
-import { headers } from "next/headers";
+import { resolveSessionUserId } from "~/server/better-auth";
 
 const createContactSchema = z.object({
   firstName: z.string().min(1),
@@ -17,7 +17,7 @@ const createContactSchema = z.object({
 
 const handlers = withApiLogging("/api/contacts", {
   GET: async () => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,7 +27,7 @@ const handlers = withApiLogging("/api/contacts", {
   },
 
   POST: async (request: Request) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -41,6 +41,6 @@ const handlers = withApiLogging("/api/contacts", {
     const createdContact = await ContactService.create(currentUser.id, parseResult.data);
     return Response.json(createdContact, { status: 201 });
   },
-});
+}, resolveSessionUserId);
 
 export const { GET, POST } = handlers;

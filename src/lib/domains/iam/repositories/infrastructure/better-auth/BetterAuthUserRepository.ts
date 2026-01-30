@@ -1,10 +1,10 @@
-import { auth } from "~/server/better-auth";
+import { getSession } from "~/server/better-auth";
 import type { UserRepository } from "../../UserRepository";
 import type { User } from "../../../objects";
 
 export class BetterAuthUserRepository implements UserRepository {
-  async getCurrentUser(headers: Headers): Promise<User | null> {
-    const session = await auth.api.getSession({ headers });
+  async getCurrentUser(): Promise<User | null> {
+    const session = await getSession();
     if (!session) return null;
 
     return {

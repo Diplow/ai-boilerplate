@@ -1,15 +1,14 @@
-import { headers } from "next/headers";
-
 import { IamService } from "~/lib/domains/iam";
 import { ConversationService } from "~/lib/domains/messaging";
 import { withApiLogging } from "~/lib/logging";
+import { resolveSessionUserId } from "~/server/better-auth";
 
 const handlers = withApiLogging("/api/conversations/[id]", {
   GET: async (
     _request: Request,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const currentUser = await IamService.getCurrentUser(await headers());
+    const currentUser = await IamService.getCurrentUser();
     if (!currentUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,6 +26,6 @@ const handlers = withApiLogging("/api/conversations/[id]", {
 
     return Response.json(foundConversation);
   },
-});
+}, resolveSessionUserId);
 
 export const { GET } = handlers;
