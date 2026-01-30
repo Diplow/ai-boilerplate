@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { ContactService } from "~/lib/domains/prospect";
 import { IamService } from "~/lib/domains/iam";
-import { withApiLogging, getPostHogClient } from "~/lib/logging";
+import { withApiLogging } from "~/lib/logging";
 import { resolveSessionUserId } from "~/server/better-auth";
 
 const createContactSchema = z.object({
@@ -47,20 +47,6 @@ const handlers = withApiLogging(
         currentUser.id,
         parseResult.data,
       );
-
-      const posthog = getPostHogClient();
-      posthog?.capture({
-        distinctId: currentUser.id,
-        event: "contact_created_server",
-        properties: {
-          contact_id: createdContact.id,
-          has_email: Boolean(parseResult.data.email),
-          has_company: Boolean(parseResult.data.company),
-          has_job_title: Boolean(parseResult.data.jobTitle),
-          has_phone: Boolean(parseResult.data.phone),
-          has_notes: Boolean(parseResult.data.notes),
-        },
-      });
 
       return Response.json(createdContact, { status: 201 });
     },

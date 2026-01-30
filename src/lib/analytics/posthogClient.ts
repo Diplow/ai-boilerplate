@@ -25,6 +25,3 @@ export function getPostHogClient(): PostHog | null {
 
   return cachedClient;
 }
-
-/** @deprecated Use getPostHogClient instead */
-export const _getPostHogClient = getPostHogClient;

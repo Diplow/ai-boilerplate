@@ -4,7 +4,7 @@ import { IamService } from "~/lib/domains/iam";
 import { ContactService } from "~/lib/domains/prospect";
 import { ConversationService, DraftService } from "~/lib/domains/messaging";
 import type { ContactInfo, ConversationMessage } from "~/lib/domains/messaging";
-import { withApiLogging, getPostHogClient } from "~/lib/logging";
+import { withApiLogging } from "~/lib/logging";
 import { resolveSessionUserId } from "~/server/better-auth";
 
 const createMessageSchema = z.object({
@@ -123,16 +123,6 @@ const handlers = withApiLogging(
           conversationHistory,
         },
       );
-
-      const posthog = getPostHogClient();
-      posthog?.capture({
-        distinctId: currentUser.id,
-        event: "ai_draft_generated_server",
-        properties: {
-          conversation_id: conversationId,
-          message_count: conversationHistory.length,
-        },
-      });
 
       return Response.json(draftResult, { status: 201 });
     },

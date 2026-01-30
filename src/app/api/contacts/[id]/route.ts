@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { ContactService } from "~/lib/domains/prospect";
 import { IamService } from "~/lib/domains/iam";
-import { withApiLogging, getPostHogClient } from "~/lib/logging";
+import { withApiLogging } from "~/lib/logging";
 import { resolveSessionUserId } from "~/server/better-auth";
 
 const updateContactSchema = z.object({
@@ -96,15 +96,6 @@ const handlers = withApiLogging(
       if (!wasDeleted) {
         return Response.json({ error: "Not found" }, { status: 404 });
       }
-
-      const posthog = getPostHogClient();
-      posthog?.capture({
-        distinctId: currentUser.id,
-        event: "contact_deleted_server",
-        properties: {
-          contact_id: contactId,
-        },
-      });
 
       return new Response(null, { status: 204 });
     },
