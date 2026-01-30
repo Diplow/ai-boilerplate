@@ -1,0 +1,1 @@
+export { getPostHogClient } from "./posthogClient";

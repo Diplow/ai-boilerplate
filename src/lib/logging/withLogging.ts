@@ -1,4 +1,4 @@
-import { _getPostHogClient } from "./posthogClient";
+import { getPostHogClient } from "~/lib/analytics";
 
 type ServiceObject = Record<string, (...args: never[]) => unknown>;
 
@@ -10,7 +10,7 @@ interface AnalyticsEvent {
 }
 
 function _captureAnalyticsEvent(event: AnalyticsEvent): void {
-  const posthogClient = _getPostHogClient();
+  const posthogClient = getPostHogClient();
   if (!posthogClient) return;
 
   posthogClient.capture({

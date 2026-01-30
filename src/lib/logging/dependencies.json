@@ -1,1 +1,1 @@
-{ "type": "boundary", "allowed": ["~/env", "posthog-node"] }
+{ "type": "boundary", "allowed": ["~/lib/analytics"] }
