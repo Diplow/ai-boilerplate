@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
   pgTable,
   pgTableCreator,
   text,
@@ -166,6 +167,28 @@ export const message = createTable(
       .notNull(),
   }),
   (t) => [index("message_conversation_idx").on(t.conversationId)],
+);
+
+export const creditBalance = createTable(
+  "credit_balance",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    userId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => user.id),
+    remainingCredits: integer("remaining_credits").notNull(),
+    monthlyAllowance: integer("monthly_allowance").notNull(),
+    periodStart: d
+      .timestamp({ withTimezone: true })
+      .notNull(),
+    periodEnd: d
+      .timestamp({ withTimezone: true })
+      .notNull(),
+  }),
+  (t) => [
+    index("credit_balance_user_idx").on(t.userId),
+  ],
 );
 
 export const conversationRelations = relations(conversation, ({ one, many }) => ({
