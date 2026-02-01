@@ -29,7 +29,17 @@ async function handleCreateConversation(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body: unknown = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return Response.json(
+      { error: `Invalid JSON: ${message}` },
+      { status: 400 },
+    );
+  }
+
   const parseResult = createConversationSchema.safeParse(body);
   if (!parseResult.success) {
     return Response.json(

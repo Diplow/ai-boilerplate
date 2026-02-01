@@ -63,7 +63,17 @@ async function handleCreateMessage(
     return Response.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body: unknown = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch (jsonError) {
+    const errorMessage =
+      jsonError instanceof Error ? jsonError.message : "Could not parse JSON";
+    return Response.json(
+      { error: "Invalid JSON", details: errorMessage },
+      { status: 400 },
+    );
+  }
   const parseResult = createMessageSchema.safeParse(body);
   if (!parseResult.success) {
     return Response.json(
