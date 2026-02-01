@@ -31,9 +31,28 @@ export class DrizzleCreditRepository implements CreditRepository {
         periodStart: input.periodStart,
         periodEnd: input.periodEnd,
       })
+      .onConflictDoNothing({
+        target: [creditBalance.userId, creditBalance.periodStart, creditBalance.periodEnd],
+      })
       .returning();
 
-    return rows[0]!;
+    if (rows[0]) {
+      return rows[0];
+    }
+
+    const existingRows = await db
+      .select()
+      .from(creditBalance)
+      .where(
+        and(
+          sql`${creditBalance.userId} = ${input.userId}`,
+          sql`${creditBalance.periodStart} = ${input.periodStart}`,
+          sql`${creditBalance.periodEnd} = ${input.periodEnd}`,
+        ),
+      )
+      .limit(1);
+
+    return existingRows[0]!;
   }
 
   async tryDeductCredits(
