@@ -1,3 +1,14 @@
+## Product Description
+
+AI-powered sales prospection platform that helps sales teams automate and streamline their prospection workflow. The platform enables users to track potential customers (prospects), manage contacts within those organizations, and leverage AI to accelerate outreach and qualification.
+
+Core concepts:
+
+- **Prospects**: Potential customer organizations being tracked through the sales pipeline
+- **Contacts**: Individual people within prospect organizations
+
+---
+
 Always use descriptive variable names
 
 Always use `model: "opus"` when spawning Task subagents.
@@ -77,9 +88,3 @@ Frontend  →  API  →  Domain  →  Database Schema
 
 Use `/plan-feature <description>` to plan features using this architecture.
 
-## Product Context
-
-Sales prospection platform that helps sales teams automate their prospection workflow. Core concepts:
-
-- **Prospects**: Potential customers being tracked
-- **Contacts**: Individual people within prospect organizations

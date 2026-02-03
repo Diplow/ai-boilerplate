@@ -21,7 +21,6 @@ Then, refine the plan by running `/plan-subsystem <path>` for each impacted subs
 - Boundary violations or responsibility mismatches
 - Unanticipated dependencies (treat these as design questions)
 - API changes needed
-- Complexity thresholds being crossed
 
 Iterate on the plan based on subsystem feedback until:
 
@@ -40,12 +39,19 @@ Iterate on the plan based on subsystem feedback until:
 
 Provide a structured plan with:
 
-1. Summary of the feature
-2. Changes per layer (with specific subsystems)
-3. New subsystems to create (if any)
-4. Dependencies to declare
-5. Open questions or risks
+1. **Execution model**: State upfront that:
+   - Each step below must be executed by an opus subagent via the Task tool
+   - Each step is self-contained: it includes the context files to read and the work to do
+   - Steps are ordered leaf-first (deepest subsystems first) so dependencies are ready when higher layers need them
 
-## Implementation Note
+2. **Summary of the feature**
 
-Each implementation step should be executed by an opus subagent via the Task tool. Structure the plan so each step is self-contained enough for a subagent to execute independently.
+3. **Key README files**: List the top impacted subsystems' README.md paths. These give a fresh session the architectural context needed before diving into implementation.
+
+4. **Implementation steps**: One step per impacted subsystem (or group of closely related subsystems if work fits in a single session). Ordered leaf-first (deeper subsystems before their parents). Each step names the subsystem path, what to change, and what to create.
+   - For work outside any subsystem (deployment config, environment variables, infrastructure), create a dedicated step with a descriptive tag (e.g., `[infra]`, `[config]`).
+   - When multiple subsystems need wiring at a higher level, consider a dedicated integration step. Skip it when a single layer (like API) naturally serves as the integration point.
+
+5. **Dependencies to declare**
+
+6. **Key assumptions, open questions, or risks**: Surface assumptions made about the feature's scope or behavior — these create a feedback opportunity before implementation begins.
