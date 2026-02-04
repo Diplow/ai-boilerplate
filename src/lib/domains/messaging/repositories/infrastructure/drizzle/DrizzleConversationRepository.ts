@@ -58,10 +58,10 @@ export class DrizzleConversationRepository implements ConversationRepository {
     return foundConversation ? mapToConversation(foundConversation) : null;
   }
 
-  async stop(conversationId: number, reason: ConversationStopReason): Promise<void> {
+  async stop(conversationId: number, ownerId: string, reason: ConversationStopReason): Promise<void> {
     await db
       .update(conversation)
       .set({ stoppedAt: new Date(), stoppedReason: reason })
-      .where(eq(conversation.id, conversationId));
+      .where(and(eq(conversation.id, conversationId), eq(conversation.ownerId, ownerId)));
   }
 }

@@ -21,7 +21,8 @@ interface ConversationData {
   stoppedReason: ConversationStopReason | null;
 }
 
-function getStopReasonMessage(reason: ConversationStopReason): string {
+function getStopReasonMessage(reason: ConversationStopReason | null): string {
+  if (!reason) return "AI has stopped working on this conversation";
   const messages: Record<ConversationStopReason, string> = {
     positive_outcome: "Prospect showed interest - ready for manual follow-up",
     unresponsive: "Prospect hasn't responded after multiple attempts",
@@ -113,11 +114,11 @@ export function ConversationThread({
       stoppedReason?: ConversationStopReason | null;
     };
 
-    // If AI stopped, update conversation state
-    if (result.stopped && result.stoppedReason) {
+    // If AI stopped, update conversation state (handle missing reason gracefully)
+    if (result.stopped) {
       setConversation((prev) =>
         prev
-          ? { ...prev, stoppedAt: new Date().toISOString(), stoppedReason: result.stoppedReason! }
+          ? { ...prev, stoppedAt: new Date().toISOString(), stoppedReason: result.stoppedReason ?? null }
           : prev,
       );
     }
@@ -151,10 +152,10 @@ export function ConversationThread({
         ))}
       </div>
 
-      {isStopped && conversation?.stoppedReason ? (
+      {isStopped ? (
         <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
           <span className="font-medium">Conversation ended:</span>{" "}
-          {getStopReasonMessage(conversation.stoppedReason)}
+          {getStopReasonMessage(conversation?.stoppedReason ?? null)}
         </div>
       ) : (
         <ContactResponseInput

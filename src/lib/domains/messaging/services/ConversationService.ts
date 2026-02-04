@@ -36,6 +36,6 @@ export const ConversationService = {
   addContactResponse: (input: MessageCreateInput) =>
     addMessage(messageRepository, input),
 
-  stop: (conversationId: number, reason: ConversationStopReason) =>
-    stopConversation(conversationRepository, conversationId, reason),
+  stop: (conversationId: number, ownerId: string, reason: ConversationStopReason) =>
+    stopConversation(conversationRepository, conversationId, ownerId, reason),
 };

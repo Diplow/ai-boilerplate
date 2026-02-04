@@ -28,8 +28,11 @@ export async function generateDraftWithBilling(
   const { analysis } = analysisResult;
   const shouldStop = analysis.status === "stop";
 
-  if (shouldStop && analysis.stopReason) {
-    await ConversationService.stop(conversationId, analysis.stopReason);
+  if (shouldStop) {
+    if (!analysis.stopReason) {
+      throw new Error("Analysis returned stop status without a stopReason");
+    }
+    await ConversationService.stop(conversationId, userId, analysis.stopReason);
   }
 
   return {

@@ -43,7 +43,8 @@ export async function findConversationByContact(
 export async function stopConversation(
   repository: ConversationRepository,
   conversationId: number,
+  ownerId: string,
   reason: ConversationStopReason,
 ) {
-  return repository.stop(conversationId, reason);
+  return repository.stop(conversationId, ownerId, reason);
 }

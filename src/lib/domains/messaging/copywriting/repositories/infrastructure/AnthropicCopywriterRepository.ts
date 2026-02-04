@@ -1,7 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import { env } from "~/env";
 import type { CopywriterRepository } from "../CopywriterRepository";
 import type { AnalysisAndDraftResult, DraftRequest, DraftResult } from "../../objects";
+
+const analysisToolInputSchema = z.object({
+  conversationStatus: z.enum(["continue", "stop"]),
+  stopReason: z.enum(["positive_outcome", "unresponsive", "negative_outcome"]).nullable().optional(),
+  draftMessage: z.string().min(1, "draftMessage must be a non-empty string"),
+});
 
 function buildSystemPrompt(request: DraftRequest): string {
   const { contactInfo, userAiContext } = request;
@@ -192,11 +199,11 @@ export class AnthropicCopywriterRepository implements CopywriterRepository {
       throw new Error("Expected tool_use response from LLM");
     }
 
-    const toolInput = toolUseBlock.input as {
-      conversationStatus: "continue" | "stop";
-      stopReason?: "positive_outcome" | "unresponsive" | "negative_outcome" | null;
-      draftMessage: string;
-    };
+    const parseResult = analysisToolInputSchema.safeParse(toolUseBlock.input);
+    if (!parseResult.success) {
+      throw new Error(`Invalid LLM response: ${parseResult.error.message}`);
+    }
+    const toolInput = parseResult.data;
 
     return {
       analysis: {

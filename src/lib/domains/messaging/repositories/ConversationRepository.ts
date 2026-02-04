@@ -6,5 +6,5 @@ export interface ConversationRepository {
   findAllByOwner(ownerId: string): Promise<Conversation[]>;
   touch(conversationId: number, ownerId: string): Promise<void>;
   findByContactAndOwner(contactId: number, ownerId: string): Promise<Conversation | null>;
-  stop(conversationId: number, reason: ConversationStopReason): Promise<void>;
+  stop(conversationId: number, ownerId: string, reason: ConversationStopReason): Promise<void>;
 }
