@@ -3,7 +3,7 @@ import { z } from "zod";
 import { IamService, getEffectiveToneOfVoice, DEFAULT_TONE_OF_VOICE } from "~/lib/domains/iam";
 import { ContactService } from "~/lib/domains/prospect";
 import { ConversationService } from "~/lib/domains/messaging";
-import type { ContactInfo, ConversationMessage, UserAiContext } from "~/lib/domains/messaging";
+import type { ContactInfo, ConversationMessage, UserAiContext, DraftRequest } from "~/lib/domains/messaging";
 import { withApiLogging } from "~/lib/logging";
 import { resolveSessionUserId } from "~/server/better-auth";
 import { generateDraftWithBilling } from "../../_generateDraftWithBilling";
@@ -12,6 +12,62 @@ const createMessageSchema = z.object({
   role: z.enum(["prospect", "contact"]),
   content: z.string().optional(),
 });
+
+interface Contact {
+  firstName: string;
+  lastName: string;
+  company: string | null;
+  jobTitle: string | null;
+}
+
+function buildContactInfo(contact: Contact): ContactInfo {
+  return {
+    firstName: contact.firstName,
+    lastName: contact.lastName,
+    company: contact.company,
+    jobTitle: contact.jobTitle,
+  };
+}
+
+const VALID_MESSAGE_ROLES = new Set(["prospect", "contact"]);
+
+function isValidMessageRole(role: string): role is "prospect" | "contact" {
+  return VALID_MESSAGE_ROLES.has(role);
+}
+
+function buildConversationHistory(messages: { role: string; content: string }[]): ConversationMessage[] {
+  return messages
+    .filter((message) => isValidMessageRole(message.role))
+    .map((message) => ({
+      role: message.role as "prospect" | "contact",
+      content: message.content,
+    }));
+}
+
+async function buildUserAiContext(userId: string): Promise<UserAiContext> {
+  const aiPreferences = await IamService.getAiPreferences(userId);
+  return {
+    companyKnowledge: aiPreferences?.companyKnowledge ?? "",
+    toneOfVoice: aiPreferences ? getEffectiveToneOfVoice(aiPreferences) : DEFAULT_TONE_OF_VOICE,
+    exampleMessages: aiPreferences?.exampleMessages ?? [],
+  };
+}
+
+async function buildDraftRequest(
+  contact: Contact,
+  conversationId: number,
+  userId: string,
+): Promise<DraftRequest> {
+  const [existingMessages, userAiContext] = await Promise.all([
+    ConversationService.getMessages(conversationId),
+    buildUserAiContext(userId),
+  ]);
+  return {
+    contactInfo: buildContactInfo(contact),
+    conversationHistory: buildConversationHistory(existingMessages),
+    userAiContext,
+  };
+}
 
 async function handleListMessages(
   _request: Request,
@@ -108,38 +164,8 @@ async function handleCreateMessage(
     return Response.json({ error: "Contact not found" }, { status: 404 });
   }
 
-  const contactInfo: ContactInfo = {
-    firstName: contact.firstName,
-    lastName: contact.lastName,
-    company: contact.company,
-    jobTitle: contact.jobTitle,
-  };
-
-  const existingMessages =
-    await ConversationService.getMessages(conversationId);
-  const conversationHistory: ConversationMessage[] = existingMessages.map(
-    (message) => ({
-      role: message.role as "prospect" | "contact",
-      content: message.content,
-    }),
-  );
-
-  const aiPreferences = await IamService.getAiPreferences(currentUser.id);
-  const userAiContext: UserAiContext = {
-    companyKnowledge: aiPreferences?.companyKnowledge ?? "",
-    toneOfVoice: aiPreferences ? getEffectiveToneOfVoice(aiPreferences) : DEFAULT_TONE_OF_VOICE,
-    exampleMessages: aiPreferences?.exampleMessages ?? [],
-  };
-
-  const draftResult = await generateDraftWithBilling(
-    currentUser.id,
-    conversationId,
-    {
-      contactInfo,
-      userAiContext,
-      conversationHistory,
-    },
-  );
+  const draftRequest = await buildDraftRequest(contact, conversationId, currentUser.id);
+  const draftResult = await generateDraftWithBilling(currentUser.id, conversationId, draftRequest);
 
   if (!draftResult) {
     return Response.json(
@@ -149,7 +175,12 @@ async function handleCreateMessage(
   }
 
   await ConversationService.touch(conversationId, currentUser.id);
-  return Response.json(draftResult, { status: 201 });
+
+  return Response.json({
+    content: draftResult.content,
+    stopped: draftResult.stopped,
+    stoppedReason: draftResult.stoppedReason,
+  }, { status: 201 });
 }
 
 const handlers = withApiLogging(
