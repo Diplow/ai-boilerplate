@@ -54,7 +54,7 @@ export class UnipileLinkedInRepository implements LinkedInEnrichmentRepository {
       const profileResponse = await this.client.users.getProfile({
         account_id: this.accountId,
         identifier: username,
-        linkedin_sections: "experience",
+        linkedin_sections: ["experience"],
       });
 
       const profile = profileResponse as {
