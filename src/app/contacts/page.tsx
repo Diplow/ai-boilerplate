@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { IamService } from "~/lib/domains/iam";
-import { ContactsPageContent } from "~/app/contacts/_components/ContactsPageContent";
+import { ContactsPageContent } from "~/app/contacts/_components";
 
 export default async function ContactsPage() {
   const currentUser = await IamService.getCurrentUser();

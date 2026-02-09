@@ -1,4 +1,5 @@
 {
   "type": "page",
-  "allowed": ["~/lib/domains/iam"]
+  "allowed": ["~/lib/domains/iam"],
+  "subsystems": ["./_components"]
 }

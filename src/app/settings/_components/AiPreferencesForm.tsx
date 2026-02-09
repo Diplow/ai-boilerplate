@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { ExampleMessagesList } from "./ExampleMessagesList";
+import { AiPreferencesFields } from "~/app/_components/AiPreferencesFields";
 
 const DEFAULT_TONE_OF_VOICE =
   "Professional yet approachable. Clear and concise. Focus on demonstrating value to the prospect without being pushy. Use natural language, avoid jargon.";
@@ -20,7 +20,6 @@ export function AiPreferencesForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
   const [companyKnowledge, setCompanyKnowledge] = useState("");
   const [toneOfVoice, setToneOfVoice] = useState(DEFAULT_TONE_OF_VOICE);
   const [exampleMessages, setExampleMessages] = useState<string[]>([]);
@@ -90,75 +89,22 @@ export function AiPreferencesForm() {
           {errorMessage}
         </div>
       )}
-
       {successMessage && (
         <div className="rounded-lg bg-green-500/10 px-4 py-3 text-sm text-green-300">
           {successMessage}
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="signature" className="text-sm font-medium">
-          Message Signature
-        </label>
-        <input
-          id="signature"
-          type="text"
-          value={signature}
-          onChange={(event) => setSignature(event.target.value)}
-          placeholder="Your name"
-          className="rounded-lg bg-white/10 px-4 py-3 text-white placeholder:text-white/30"
-        />
-        <p className="text-sm text-white/40">
-          How the AI will sign your messages
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label htmlFor="company-knowledge" className="text-sm font-medium">
-          Company & Product Knowledge <span className="text-red-400">*</span>
-        </label>
-        <textarea
-          id="company-knowledge"
-          value={companyKnowledge}
-          onChange={(event) => setCompanyKnowledge(event.target.value)}
-          placeholder="Describe your company, products, value propositions, and target market..."
-          className="rounded-lg bg-white/10 px-4 py-3 text-white placeholder:text-white/30"
-          rows={6}
-          required
-        />
-        <p className="text-sm text-white/40">
-          This information helps the AI craft relevant messages
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label htmlFor="tone-of-voice" className="text-sm font-medium">
-          Tone of Voice
-        </label>
-        <textarea
-          id="tone-of-voice"
-          value={toneOfVoice}
-          onChange={(event) => setToneOfVoice(event.target.value)}
-          className="rounded-lg bg-white/10 px-4 py-3 text-white placeholder:text-white/30"
-          rows={3}
-        />
-        <p className="text-sm text-white/40">
-          Describe the writing style you want the AI to use
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium">Example Messages (Optional)</label>
-        <p className="text-sm text-white/40">
-          Provide up to 10 example messages that represent your preferred style
-        </p>
-        <ExampleMessagesList
-          messages={exampleMessages}
-          onChange={setExampleMessages}
-        />
-      </div>
-
+      <AiPreferencesFields
+        signature={signature}
+        onSignatureChange={setSignature}
+        companyKnowledge={companyKnowledge}
+        onCompanyKnowledgeChange={setCompanyKnowledge}
+        toneOfVoice={toneOfVoice}
+        onToneOfVoiceChange={setToneOfVoice}
+        exampleMessages={exampleMessages}
+        onExampleMessagesChange={setExampleMessages}
+      />
       <button
         type="submit"
         disabled={isSaving}
