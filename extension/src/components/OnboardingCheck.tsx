@@ -39,6 +39,10 @@ export function OnboardingCheck({ userName }: OnboardingCheckProps) {
 
       {errorMessage && <p className="error">{errorMessage}</p>}
 
+      {isOnboardingCompleted === null && !errorMessage && (
+        <p className="loading">Checking onboarding status...</p>
+      )}
+
       {isOnboardingCompleted === false && (
         <div className="warning">
           <p>

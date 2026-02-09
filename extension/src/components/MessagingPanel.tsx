@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useState, useEffect, useCallback } from "react";
 import { get, post, ApiError } from "../lib/api-client";
 import { MessageBubble } from "./MessageBubble";
@@ -8,7 +9,7 @@ interface Conversation {
 }
 
 interface Message {
-  id: number;
+  id: number | string;
   role: "prospect" | "contact";
   content: string;
 }
@@ -80,7 +81,7 @@ export function MessagingPanel({ contactId, contactName }: MessagingPanelProps) 
       setConversationId(result.conversation.id);
       setMessages([
         {
-          id: Date.now(),
+          id: crypto.randomUUID(),
           role: "prospect",
           content: result.firstMessage.content,
         },
@@ -108,44 +109,56 @@ export function MessagingPanel({ contactId, contactName }: MessagingPanelProps) 
     setErrorMessage(null);
 
     try {
-      const savedMessage = await post<Message>(
-        `/api/conversations/${conversationId}/messages`,
-        { role: "contact", content: contactReplyInput.trim() },
-      );
-      setMessages((previous) => [...previous, savedMessage]);
-      setContactReplyInput("");
-
-      // Auto-generate AI reply
-      const aiReply = await post<DraftResponse>(
-        `/api/conversations/${conversationId}/messages`,
-        { role: "prospect" },
-      );
-      setMessages((previous) => [
-        ...previous,
-        { id: Date.now(), role: "prospect", content: aiReply.content },
-      ]);
-      if (aiReply.stopped) {
-        setStoppedReason(aiReply.stoppedReason);
+      // Step 1: Save the contact's message
+      try {
+        const savedMessage = await post<Message>(
+          `/api/conversations/${conversationId}/messages`,
+          { role: "contact", content: contactReplyInput.trim() },
+        );
+        setMessages((previous) => [...previous, savedMessage]);
+        setContactReplyInput("");
+      } catch (saveError) {
+        if (saveError instanceof ApiError && saveError.status === 402) {
+          setErrorMessage("Insufficient credits");
+        } else {
+          const message = saveError instanceof Error ? saveError.message : "Failed to send";
+          setErrorMessage(message);
+        }
+        return;
       }
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 402) {
-        setErrorMessage("Insufficient credits");
-      } else {
-        const message = error instanceof Error ? error.message : "Failed to send";
-        setErrorMessage(message);
+
+      // Step 2: Auto-generate AI reply (separate error handling)
+      try {
+        const aiReply = await post<DraftResponse>(
+          `/api/conversations/${conversationId}/messages`,
+          { role: "prospect" },
+        );
+        setMessages((previous) => [
+          ...previous,
+          { id: crypto.randomUUID(), role: "prospect" as const, content: aiReply.content },
+        ]);
+        if (aiReply.stopped) {
+          setStoppedReason(aiReply.stoppedReason);
+        }
+      } catch (aiError) {
+        if (aiError instanceof ApiError && aiError.status === 402) {
+          setErrorMessage("Insufficient credits");
+        } else {
+          setErrorMessage("Reply saved but AI response failed");
+        }
       }
     } finally {
       setIsProcessing(false);
     }
   }
 
-  const containerStyles: React.CSSProperties = {
+  const containerStyles: CSSProperties = {
     display: "flex",
     flexDirection: "column",
     gap: "8px",
   };
 
-  const messagesContainerStyles: React.CSSProperties = {
+  const messagesContainerStyles: CSSProperties = {
     display: "flex",
     flexDirection: "column",
     gap: "6px",
@@ -154,13 +167,13 @@ export function MessagingPanel({ contactId, contactName }: MessagingPanelProps) 
     padding: "4px 0",
   };
 
-  const inputRowStyles: React.CSSProperties = {
+  const inputRowStyles: CSSProperties = {
     display: "flex",
     gap: "6px",
     marginTop: "4px",
   };
 
-  const inputStyles: React.CSSProperties = {
+  const inputStyles: CSSProperties = {
     flex: 1,
     padding: "8px 10px",
     border: "1px solid #ddd",
@@ -169,7 +182,7 @@ export function MessagingPanel({ contactId, contactName }: MessagingPanelProps) 
     outline: "none",
   };
 
-  const sendButtonStyles: React.CSSProperties = {
+  const sendButtonStyles: CSSProperties = {
     background: "#7c3aed",
     color: "white",
     border: "none",
@@ -181,7 +194,7 @@ export function MessagingPanel({ contactId, contactName }: MessagingPanelProps) 
     opacity: isProcessing ? 0.5 : 1,
   };
 
-  const startButtonStyles: React.CSSProperties = {
+  const startButtonStyles: CSSProperties = {
     width: "100%",
     background: "#7c3aed",
     color: "white",

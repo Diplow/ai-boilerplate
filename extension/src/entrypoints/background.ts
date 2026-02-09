@@ -1,19 +1,9 @@
 import { defineBackground } from "wxt/sandbox";
+import type { ApiMessage, ApiResponse } from "../lib/types";
+
+export type { ApiMessage, ApiResponse };
 
 const BASE_URL = import.meta.env.WXT_API_URL ?? "http://localhost:3000";
-
-export interface ApiMessage {
-  type: "api-request";
-  method: "GET" | "POST";
-  path: string;
-  body?: unknown;
-}
-
-export interface ApiResponse {
-  ok: boolean;
-  status: number;
-  data: unknown;
-}
 
 export default defineBackground(() => {
   chrome.runtime.onMessage.addListener(

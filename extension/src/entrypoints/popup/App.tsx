@@ -34,7 +34,11 @@ export function App() {
   }, [checkSession]);
 
   async function handleSignOut() {
-    await authClient.signOut();
+    try {
+      await authClient.signOut();
+    } catch (signOutError) {
+      console.error("Sign out failed:", signOutError);
+    }
     setCurrentUser(null);
     setAppState("unauthenticated");
   }

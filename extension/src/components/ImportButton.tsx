@@ -1,23 +1,7 @@
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { post } from "../lib/api-client";
-
-interface LinkedInProfileData {
-  providerId: string;
-  firstName: string;
-  lastName: string;
-  headline: string | null;
-  linkedinUrl: string;
-  currentJobTitle: string | null;
-}
-
-interface LinkedInCompanyData {
-  providerId: string | null;
-  name: string;
-  industry: string | null;
-  size: string | null;
-  website: string | null;
-  linkedinUrl: string | null;
-}
+import type { LinkedInProfileData, LinkedInCompanyData } from "../lib/types";
 
 interface ImportButtonProps {
   profile: LinkedInProfileData;
@@ -35,7 +19,16 @@ export function ImportButton({ profile, company, onImported }: ImportButtonProps
     setErrorMessage(null);
 
     try {
-      let companyId: number | undefined;
+      // Create contact first to avoid orphan companies if contact creation fails
+      const contactResult = await post<{ id: number }>("/api/contacts", {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        company: company?.name ?? undefined,
+        jobTitle: profile.currentJobTitle ?? undefined,
+        notes: profile.headline ?? undefined,
+        linkedinProviderId: profile.providerId,
+        linkedinUrl: profile.linkedinUrl,
+      });
 
       if (includeCompany && company) {
         const companyResult = await post<{ id: number }>("/api/contacts/companies", {
@@ -46,19 +39,12 @@ export function ImportButton({ profile, company, onImported }: ImportButtonProps
           size: company.size ?? undefined,
           website: company.website ?? undefined,
         });
-        companyId = companyResult.id;
-      }
 
-      await post("/api/contacts", {
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        company: company?.name ?? undefined,
-        jobTitle: profile.currentJobTitle ?? undefined,
-        notes: profile.headline ?? undefined,
-        linkedinProviderId: profile.providerId,
-        linkedinUrl: profile.linkedinUrl,
-        companyId,
-      });
+        // Link company to the contact
+        await post(`/api/contacts/${contactResult.id}`, {
+          companyId: companyResult.id,
+        });
+      }
 
       onImported();
     } catch (error) {
@@ -70,7 +56,7 @@ export function ImportButton({ profile, company, onImported }: ImportButtonProps
     }
   }
 
-  const buttonStyles: React.CSSProperties = {
+  const buttonStyles: CSSProperties = {
     width: "100%",
     background: "#7c3aed",
     color: "white",

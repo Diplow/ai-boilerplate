@@ -1,4 +1,4 @@
-import type { ApiMessage, ApiResponse } from "../entrypoints/background";
+import type { ApiMessage, ApiResponse } from "./types";
 
 const BASE_URL = import.meta.env.WXT_API_URL ?? "http://localhost:3000";
 
@@ -25,7 +25,12 @@ async function sendViaBackground<T>(
   body?: unknown,
 ): Promise<T> {
   const message: ApiMessage = { type: "api-request", method, path, body };
-  const response: ApiResponse = await chrome.runtime.sendMessage(message);
+  const response: ApiResponse | undefined = await chrome.runtime.sendMessage(message);
+
+  if (!response) {
+    const lastErrorMessage = chrome.runtime.lastError?.message ?? "No response from background script";
+    throw new ApiError(lastErrorMessage, 0);
+  }
 
   if (!response.ok) {
     const errorMessage =

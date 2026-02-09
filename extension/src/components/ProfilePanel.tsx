@@ -1,25 +1,9 @@
+import type { CSSProperties } from "react";
 import { useState, useEffect } from "react";
 import { post, ApiError } from "../lib/api-client";
+import type { LinkedInProfileData, LinkedInCompanyData } from "../lib/types";
 import { ImportButton } from "./ImportButton";
 import { MessagingPanel } from "./MessagingPanel";
-
-interface LinkedInProfileData {
-  providerId: string;
-  firstName: string;
-  lastName: string;
-  headline: string | null;
-  linkedinUrl: string;
-  currentJobTitle: string | null;
-}
-
-interface LinkedInCompanyData {
-  providerId: string | null;
-  name: string;
-  industry: string | null;
-  size: string | null;
-  website: string | null;
-  linkedinUrl: string | null;
-}
 
 interface ExistingContact {
   id: number;
@@ -39,7 +23,7 @@ interface ProfilePanelProps {
 
 type PanelState = "loading" | "error" | "unauthenticated" | "preview";
 
-const PANEL_STYLES: React.CSSProperties = {
+const PANEL_STYLES: CSSProperties = {
   position: "fixed",
   bottom: "20px",
   right: "20px",
@@ -55,7 +39,7 @@ const PANEL_STYLES: React.CSSProperties = {
   zIndex: 2147483647,
 };
 
-const HEADER_STYLES: React.CSSProperties = {
+const HEADER_STYLES: CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
@@ -67,7 +51,7 @@ const HEADER_STYLES: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const BODY_STYLES: React.CSSProperties = {
+const BODY_STYLES: CSSProperties = {
   padding: "16px",
 };
 

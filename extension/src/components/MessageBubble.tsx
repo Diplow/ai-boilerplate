@@ -1,9 +1,11 @@
+import type { CSSProperties } from "react";
+
 interface MessageBubbleProps {
   role: "prospect" | "contact";
   content: string;
 }
 
-const PROSPECT_STYLES: React.CSSProperties = {
+const PROSPECT_STYLES: CSSProperties = {
   alignSelf: "flex-end",
   background: "#7c3aed",
   color: "white",
@@ -14,7 +16,7 @@ const PROSPECT_STYLES: React.CSSProperties = {
   lineHeight: "1.4",
 };
 
-const CONTACT_STYLES: React.CSSProperties = {
+const CONTACT_STYLES: CSSProperties = {
   alignSelf: "flex-start",
   background: "#f3f4f6",
   color: "#1a1a2e",
