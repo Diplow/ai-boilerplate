@@ -33,12 +33,14 @@ interface ConversationSetupProps {
   onConversationCreated: (conversationId: number) => void;
   onBack: () => void;
   existingConversations: EnrichedConversation[];
+  initialContactId?: number | null;
 }
 
 export function ConversationSetup({
   onConversationCreated,
   onBack,
   existingConversations,
+  initialContactId,
 }: ConversationSetupProps) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContactId, setSelectedContactId] = useState<number | "">("");
@@ -51,7 +53,13 @@ export function ConversationSetup({
     async function fetchContacts() {
       try {
         const response = await fetch("/api/contacts");
-        if (response.ok) setContacts((await response.json()) as Contact[]);
+        if (response.ok) {
+          const fetchedContacts = (await response.json()) as Contact[];
+          setContacts(fetchedContacts);
+          if (initialContactId && fetchedContacts.some((contact) => contact.id === initialContactId)) {
+            setSelectedContactId(initialContactId);
+          }
+        }
       } catch {
         // Silently fail
       } finally {
@@ -59,7 +67,7 @@ export function ConversationSetup({
       }
     }
     void fetchContacts();
-  }, []);
+  }, [initialContactId]);
 
   useEffect(() => {
     async function fetchOnboardingStatus() {
