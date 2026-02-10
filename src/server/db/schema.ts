@@ -175,7 +175,7 @@ export const conversation = createTable(
     contactId: d
       .integer()
       .notNull()
-      .references(() => contact.id),
+      .references(() => contact.id, { onDelete: "cascade" }),
     ownerId: d
       .varchar({ length: 255 })
       .notNull()
